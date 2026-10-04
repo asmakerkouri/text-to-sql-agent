@@ -1,0 +1,81 @@
+{
+  "total": {
+    "cases": 106,
+    "executable": 106,
+    "correct": 105
+  },
+  "by_kind": {
+    "plural_table": {
+      "cases": 30,
+      "executable": 30,
+      "correct": 30
+    },
+    "typo_column": {
+      "cases": 26,
+      "executable": 26,
+      "correct": 26
+    },
+    "snake_case_column": {
+      "cases": 22,
+      "executable": 22,
+      "correct": 22
+    },
+    "ambiguous_column": {
+      "cases": 15,
+      "executable": 15,
+      "correct": 15
+    },
+    "wrong_qualifier": {
+      "cases": 13,
+      "executable": 13,
+      "correct": 12
+    }
+  },
+  "examples": [
+    {
+      "kind": "plural_table",
+      "bad": "SELECT COUNT(*) FROM Customers",
+      "error": "no such table: Customers",
+      "fixed": "SELECT COUNT(*) FROM Customer",
+      "changes": [
+        "table Customers -> Customer"
+      ]
+    },
+    {
+      "kind": "typo_column",
+      "bad": "SELECT COUNT(*) FROM Track WHERE Millieconds > 300000",
+      "error": "no such column: Millieconds",
+      "fixed": "SELECT COUNT(*) FROM Track WHERE Milliseconds > 300000",
+      "changes": [
+        "column Millieconds -> Milliseconds"
+      ]
+    },
+    {
+      "kind": "snake_case_column",
+      "bad": "SELECT ROUND(AVG(unit_price), 2) FROM Track",
+      "error": "no such column: unit_price",
+      "fixed": "SELECT ROUND(AVG(UnitPrice), 2) FROM Track",
+      "changes": [
+        "column unit_price -> UnitPrice"
+      ]
+    },
+    {
+      "kind": "ambiguous_column",
+      "bad": "SELECT g.Name, COUNT(*) AS n FROM Track AS t JOIN Genre AS g ON g.GenreId = GenreId GROUP BY g.Name ORDER BY n DESC LIMIT 10",
+      "error": "ambiguous column name: GenreId",
+      "fixed": "SELECT g.Name, COUNT(*) AS n FROM Track AS t JOIN Genre AS g ON g.GenreId = t.GenreId GROUP BY g.Name ORDER BY n DESC LIMIT 10",
+      "changes": [
+        "ambiguous column GenreId -> t.GenreId"
+      ]
+    },
+    {
+      "kind": "wrong_qualifier",
+      "bad": "SELECT al.Name, COUNT(*) AS n FROM Album AS al JOIN Artist AS ar ON ar.ArtistId = al.ArtistId GROUP BY ar.ArtistId ORDER BY n DESC LIMIT 1",
+      "error": "no such column: al.Name",
+      "fixed": "SELECT ar.Name, COUNT(*) AS n FROM Album AS al JOIN Artist AS ar ON ar.ArtistId = al.ArtistId GROUP BY ar.ArtistId ORDER BY n DESC LIMIT 1",
+      "changes": [
+        "column al.Name -> ar.Name"
+      ]
+    }
+  ]
+}

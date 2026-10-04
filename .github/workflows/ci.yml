@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - name: Unit tests (agent loop with a scripted LLM, guardrail, repair, API)
+        run: pytest -q
+      - name: Benchmarks (guardrail and repair, no LLM needed)
+        run: |
+          python eval/run_eval.py guard
+          python eval/run_eval.py repair
+      - uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: eval/results/
+
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and smoke test
+        run: |
+          docker build -t sql-agent:ci .
+          docker run -d -p 8000:8000 --name api sql-agent:ci
+          for i in $(seq 1 30); do curl -fs localhost:8000/health && break; sleep 1; done
+          curl -fs localhost:8000/schema | grep -q InvoiceLine

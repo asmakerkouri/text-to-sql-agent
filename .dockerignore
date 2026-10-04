@@ -1,0 +1,6 @@
+.git
+.venv
+output
+docs
+tests
+eval/results
